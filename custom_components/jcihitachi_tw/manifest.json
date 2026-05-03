@@ -1,15 +1,11 @@
 {
   "domain": "jcihitachi_tw",
   "name": "JciHitachi TW",
-  "codeowners": [
-    "@qqaatw"
-  ],
+  "codeowners": ["@qqaatw"],
   "config_flow": true,
   "documentation": "https://github.com/Raymondhou0917/JciHitachiHA",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Raymondhou0917/JciHitachiHA/issues",
-  "requirements": [
-    "LibJciHitachi @ git+https://github.com/Raymondhou0917/LibJciHitachi.git@main"
-  ],
-  "version": "1.9.5-fork.1"
+  "requirements": ["LibJciHitachi @ git+https://github.com/Raymondhou0917/LibJciHitachi.git@{"message":"No commit found for SHA: main","documentation_url":"https://docs.github.com/rest/commits/commits#get-a-commit","status":"422"}"],
+  "version": "1.9.5-fork.2"
 }
