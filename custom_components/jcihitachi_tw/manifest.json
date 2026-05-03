@@ -1,11 +1,16 @@
 {
   "domain": "jcihitachi_tw",
-  "name": "JciHitachi TW",
-  "codeowners": ["@qqaatw"],
+  "name": "JciHitachi TW (Raymond fork)",
+  "codeowners": ["@qqaatw", "@Raymondhou0917"],
   "config_flow": true,
   "documentation": "https://github.com/Raymondhou0917/JciHitachiHA",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Raymondhou0917/JciHitachiHA/issues",
-  "requirements": ["LibJciHitachi @ git+https://github.com/Raymondhou0917/LibJciHitachi.git@e8121085ec00194e662671527da8432a6b7f0b8d"],
-  "version": "1.9.5-fork.3"
+  "requirements": [
+    "awsiotsdk==1.28.2",
+    "awscrt==0.31.3",
+    "httpx>=0.28.0",
+    "paho-mqtt>=2.0.0"
+  ],
+  "version": "1.9.5-fork.4"
 }
