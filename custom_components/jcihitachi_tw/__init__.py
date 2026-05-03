@@ -11,8 +11,8 @@ from homeassistant.helpers import discovery
 from homeassistant.helpers.update_coordinator import (CoordinatorEntity,
                                                       DataUpdateCoordinator,
                                                       UpdateFailed)
-from JciHitachi import __version__
-from JciHitachi.api import JciHitachiAWSAPI
+from .lib import __version__
+from .lib.api import JciHitachiAWSAPI
 
 from .const import (API, CONF_DEVICES, CONF_EMAIL, CONF_PASSWORD, CONF_RETRY,
                     CONFIG_SCHEMA, COORDINATOR, DOMAIN, UPDATE_DATA,
