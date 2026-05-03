@@ -5,6 +5,7 @@ import json
 import logging
 import threading
 import time
+import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from random import random, choices
@@ -937,9 +938,11 @@ class JciHitachiAWSMqttConnection:
         if command_name not in ["get", "update"]:  # we don't subscribe delete
             raise ValueError("command_name must be one of `get` or `update`.")
 
-        # The length of client token can't exceed 64 bytes, so we only use gateway mac address as the token.
-        client_token = thing_name.split("_")[1]
-        self._client_tokens.update({client_token: thing_name})
+        # FORK FIX: 用 uuid 確保 client_token 唯一，避免 race condition
+        # （Python 3.14 asyncio 排程改變後，原本 MAC-based token 會碰到 pop() KeyError）
+        # 64-byte limit, 我們用 mac + uuid hex 前段 = 32 bytes 安全
+        client_token = thing_name.split("_")[1] + "_" + uuid.uuid4().hex[:16]
+        self._client_tokens[client_token] = thing_name
         if thing_name in self._mqtt_events.device_shadow_event:
             self._mqtt_events.device_shadow_event[thing_name].clear()
         else:
