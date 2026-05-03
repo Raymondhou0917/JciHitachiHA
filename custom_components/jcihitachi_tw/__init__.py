@@ -26,7 +26,7 @@ BASE_TIMEOUT = 5
 
 def build_coordinator(hass, api):
 
-    timeout = BASE_TIMEOUT + len(api.things) * 2
+    timeout = BASE_TIMEOUT + len(api.things) * 4 + 10
 
     async def async_update_data():
         """Fetch data from API endpoint.
