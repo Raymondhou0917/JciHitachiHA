@@ -1,4 +1,5 @@
 from __future__ import annotations
+import logging
 import random
 import time
 import warnings
@@ -21,6 +22,8 @@ from .status import (
     JciHitachiCommandDH,
     JciHitachiStatusInterpreter,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class Peripheral:  # pragma: no cover
@@ -1158,8 +1161,22 @@ class JciHitachiAWSAPI:
             If an error occurs, RuntimeError will be raised.
         """
 
+        allow_partial_refresh = device_name is None
+        things = list(self._get_valid_things(device_name))
+
+        def handle_unavailable(name: str, thing: AWSThing, reason: str) -> None:
+            thing.available = False
+            if allow_partial_refresh:
+                _LOGGER.warning(
+                    "Marking JciHitachi device %s unavailable: %s",
+                    name,
+                    reason,
+                )
+                return
+            raise RuntimeError(reason)
+
         # queue tasks
-        for name, thing in self._get_valid_things(device_name):
+        for name, thing in things:
             self._check_before_publish()
 
             if refresh_support_code:
@@ -1183,45 +1200,78 @@ class JciHitachiAWSAPI:
         support_results, shadow_results, status_results, _ = self._mqtt.execute()
 
         # gather results
-        for name, thing in self._get_valid_things(device_name):
+        for name, thing in things:
             if refresh_support_code:
                 if thing.thing_name in support_results:
                     if thing.thing_name not in self._mqtt.mqtt_events.device_support:
-                        raise RuntimeError(
-                            f"An event occurred but wasn't accompanied with data when refreshing {name} support code."
+                        handle_unavailable(
+                            name,
+                            thing,
+                            f"Support event for {name} completed without data.",
                         )
+                        continue
                     thing.support_code = self._mqtt.mqtt_events.device_support[
                         thing.thing_name
                     ]
+                    if thing.support_code.status.get("Error", 0) != 0:
+                        handle_unavailable(
+                            name,
+                            thing,
+                            f"Device returned support error {thing.support_code.status.get('Error')}.",
+                        )
+                        continue
                 else:
-                    raise RuntimeError(
-                        f"Timed out refreshing {name} support code. Please ensure the device is online and avoid opening the official app."
+                    handle_unavailable(
+                        name,
+                        thing,
+                        f"Timed out refreshing {name} support code. Please ensure the device is online and avoid opening the official app.",
                     )
+                    continue
             if refresh_shadow:
                 if thing.thing_name in shadow_results:
                     if thing.thing_name not in self._mqtt.mqtt_events.device_shadow:
-                        raise RuntimeError(
-                            f"An event occurred but wasn't accompanied with data when refreshing {name} shadow."
-                        )
-                    thing.shadow = self._mqtt.mqtt_events.device_shadow[
-                        thing.thing_name
-                    ]
+                        if allow_partial_refresh:
+                            _LOGGER.warning(
+                                "Shadow event for JciHitachi device %s completed without data.",
+                                name,
+                            )
+                        else:
+                            raise RuntimeError(
+                                f"An event occurred but wasn't accompanied with data when refreshing {name} shadow."
+                            )
+                        continue
+                    else:
+                        thing.shadow = self._mqtt.mqtt_events.device_shadow[
+                            thing.thing_name
+                        ]
                 else:
-                    raise RuntimeError(
-                        f"Timed out refreshing {name} shadow. Please ensure the device is online and avoid opening the official app."
-                    )
+                    if allow_partial_refresh:
+                        _LOGGER.warning(
+                            "Timed out refreshing JciHitachi device %s shadow.",
+                            name,
+                        )
+                    else:
+                        raise RuntimeError(
+                            f"Timed out refreshing {name} shadow. Please ensure the device is online and avoid opening the official app."
+                        )
 
             if thing.thing_name in status_results:
                 if thing.thing_name not in self._mqtt.mqtt_events.device_status:
-                    raise RuntimeError(
-                        f"An event occurred but wasn't accompanied with data when refreshing {name} status code."
+                    handle_unavailable(
+                        name,
+                        thing,
+                        f"Status event for {name} completed without data.",
                     )
+                    continue
                 thing.status_code = self._mqtt.mqtt_events.device_status[
                     thing.thing_name
                 ]
+                thing.available = True
             else:
-                raise RuntimeError(
-                    f"Timed out refreshing {name} status code. Please ensure the device is online and avoid opening the official app."
+                handle_unavailable(
+                    name,
+                    thing,
+                    f"Timed out refreshing {name} status code. Please ensure the device is online and avoid opening the official app.",
                 )
 
     def get_status(
@@ -1246,6 +1296,12 @@ class JciHitachiAWSAPI:
 
         statuses = {}
         for name, thing in self._get_valid_things(device_name):
+            if (
+                not thing.available
+                or thing.status_code is None
+                or thing.support_code is None
+            ):
+                continue
             if legacy:
                 statuses[name] = thing.status_code.legacy_status
             else:

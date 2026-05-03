@@ -13,6 +13,8 @@ async def _async_setup(hass, async_add):
     coordinator = hass.data[DOMAIN][COORDINATOR]
 
     for thing in api.things.values():
+        if not thing.available or thing.status_code is None or thing.support_code is None:
+            continue
         async_add(
             [JciHitachiMonthlyDataSelectorNumberEntity(thing, coordinator)],
             update_before_add=True

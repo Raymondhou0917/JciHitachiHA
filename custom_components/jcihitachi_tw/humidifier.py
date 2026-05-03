@@ -37,6 +37,8 @@ async def _async_setup(hass, async_add):
     coordinator = hass.data[DOMAIN][COORDINATOR]
 
     for thing in api.things.values():
+        if not thing.available or thing.status_code is None or thing.support_code is None:
+            continue
         if thing.type == "DH":
             status = hass.data[DOMAIN][UPDATED_DATA][thing.name]
             supported_features = JciHitachiDehumidifierEntity.calculate_supported_features(
