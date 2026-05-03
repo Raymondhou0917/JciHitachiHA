@@ -3,7 +3,7 @@ import logging
 
 from homeassistant import config_entries
 from homeassistant.const import CONF_DEVICES, CONF_EMAIL, CONF_PASSWORD
-from JciHitachi.api import JciHitachiAWSAPI
+from .lib.api import JciHitachiAWSAPI
 
 from .const import (API, CONF_ADD_ANOTHER_DEVICE, CONF_RETRY,
                     CONFIG_FLOW_ADD_DEVICE_SCHEMA, CONFIG_FLOW_SCHEMA, DOMAIN)
