@@ -574,6 +574,15 @@ class JciHitachiAWSMqttConnection:
         return self._mqtt_events
 
     def _on_publish(self, topic: str, payload: bytes, dup, qos, retain, **kwargs):
+        _LOGGER.warning(
+            "DEBUG JCI MQTT callback topic=%r dup=%s qos=%s retain=%s payload_len=%d payload_head=%r",
+            topic,
+            dup,
+            qos,
+            retain,
+            len(payload),
+            payload[:200],
+        )
         try:
             payload = json.loads(payload.decode(errors="replace"))
         except Exception as e:
@@ -588,6 +597,7 @@ class JciHitachiAWSMqttConnection:
             print(f"Mqtt topic {topic} published with payload \n {payload}")
 
         split_topic = topic.split("/")
+        _LOGGER.warning("DEBUG JCI MQTT split_topic=%r", split_topic)
 
         if len(split_topic) >= 4 and split_topic[3] != "shadow":
             thing_name = split_topic[1]
@@ -881,11 +891,20 @@ class JciHitachiAWSMqttConnection:
                 self._mqtt_events.device_status_event[thing_name] = threading.Event()
 
             def fn():
+                _LOGGER.warning("DEBUG JCI MQTT publish status topic=%r", status_topic)
                 publish_future, _ = self._mqttc.publish(
                     status_topic, json.dumps(default_payload), QOS
                 )
                 publish_future.result(timeout)
-                self._mqtt_events.device_status_event[thing_name].wait(timeout)
+                received = self._mqtt_events.device_status_event[thing_name].wait(
+                    timeout
+                )
+                _LOGGER.warning(
+                    "DEBUG JCI MQTT status wait thing=%r received=%s cached_status_keys=%r",
+                    thing_name,
+                    received,
+                    list(self._mqtt_events.device_status.keys()),
+                )
 
             self._execution_pools.status_execution_pool.append(
                 self._wrap_async(thing_name, fn)
