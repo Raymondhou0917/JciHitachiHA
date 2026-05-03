@@ -6,6 +6,6 @@
   "documentation": "https://github.com/Raymondhou0917/JciHitachiHA",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Raymondhou0917/JciHitachiHA/issues",
-  "requirements": ["LibJciHitachi @ git+https://github.com/Raymondhou0917/LibJciHitachi.git@{"message":"No commit found for SHA: main","documentation_url":"https://docs.github.com/rest/commits/commits#get-a-commit","status":"422"}"],
-  "version": "1.9.5-fork.2"
+  "requirements": ["LibJciHitachi @ git+https://github.com/Raymondhou0917/LibJciHitachi.git@e8121085ec00194e662671527da8432a6b7f0b8d"],
+  "version": "1.9.5-fork.3"
 }
