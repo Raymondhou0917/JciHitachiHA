@@ -7,10 +7,10 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Raymondhou0917/JciHitachiHA/issues",
   "requirements": [
-    "awsiotsdk==1.28.2",
-    "awscrt==0.31.3",
+    "awsiotsdk==1.29.0",
+    "awscrt==0.32.2",
     "httpx>=0.28.0",
     "paho-mqtt>=2.0.0"
   ],
-  "version": "1.9.5-fork.4"
+  "version": "1.9.5-fork.5"
 }
